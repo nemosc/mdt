@@ -39,6 +39,7 @@ def get_cid(type: int):
     global deck_addr
     global duel_addr
     global oppo_addr
+    global shop_addr
     while type == 1:
         try:
             deck_pointer_value = (
@@ -64,6 +65,15 @@ def get_cid(type: int):
             return oppo_cid
         except Exception:
             return 0
+    while type == 4:
+        try:
+            shop_pointer_value = (
+                read_longlongs(pm, shop_addr, [0xB8, 0x0, 0xF8, 0x140]) + 0x20
+            )
+            shop_cid = pm.read_int(shop_pointer_value)
+            return shop_cid
+        except Exception:
+            return 0
 
 
 def valid_cid(cid: int):
@@ -77,6 +87,7 @@ def translate():
     global cid_temp_duel
     global cid_temp_deck
     global cid_temp_oppo
+    global cid_temp_shop
     global cid_show_gui
     global baseAddress
     if baseAddress is None:
@@ -87,7 +98,11 @@ def translate():
     cid_deck = get_cid(1)
     cid_duel = get_cid(2)
     cid_oppo = get_cid(3)
+    cid_shop = get_cid(4)
 
+    if valid_cid(cid_shop) and cid_shop != cid_temp_shop:
+        cid_temp_shop = cid_shop
+        cid_show_gui = cid_shop
     if valid_cid(cid_oppo) and cid_oppo != cid_temp_oppo:
         cid_temp_oppo = cid_oppo
         cid_show_gui = cid_oppo
@@ -122,6 +137,7 @@ def get_baseAddress():
     global deck_addr
     global duel_addr
     global oppo_addr
+    global shop_addr
     pm = pymem.Pymem("masterduel.exe")
     baseAddress = pymem.process.module_from_name(
         pm.process_handle, "GameAssembly.dll"
@@ -130,6 +146,7 @@ def get_baseAddress():
     deck_addr = baseAddress + int("0x01CCD278", base=16)
     duel_addr = baseAddress + int("0x01cb2b90", base=16)
     oppo_addr = baseAddress + int("0x01CCD278", base=16)
+    shop_addr = baseAddress + int("0x01CCD278", base=16)
 
 
 # UAC判断
